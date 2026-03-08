@@ -31,9 +31,9 @@ jobs:
             fi
             cd ~/girin_server
             git pull origin main
+            docker stop $(docker ps -q) || true
+            docker rm $(docker ps -aq) || true
             docker build -t girin-server .
-            docker stop girin-server || true
-            docker rm girin-server || true
             docker run -d \
               --name girin-server \
               -p 4000:4000 \
