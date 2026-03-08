@@ -7,8 +7,6 @@ RUN npm install
 
 COPY src/ ./src/
 
-RUN mkdir -p /app/uploads
-
 EXPOSE 4000
 
 CMD ["node", "src/index.js"]
