@@ -1,14 +1,6 @@
 import multer from 'multer';
 
-export const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
-
-const storage = multer.diskStorage({
-  destination: UPLOAD_DIR,
-  filename: (_req, file, cb) => {
-    const uniqueName = `${Date.now()}-${file.originalname}`;
-    cb(null, uniqueName);
-  },
-});
+const storage = multer.memoryStorage();
 
 export const upload = multer({
   storage,

@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import { connectDB } from './config/db.js';
-import { UPLOAD_DIR } from './config/upload.js';
 import productRoutes from './routes/productRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import authRoutes from './routes/authRoutes.js';
@@ -13,8 +12,6 @@ const PORT = process.env.PORT || 4000;
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static(UPLOAD_DIR));
-
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);

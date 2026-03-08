@@ -9,7 +9,9 @@ export async function createCategory(req, res) {
   const { name, order } = req.body;
   if (!name) return res.status(400).json({ error: 'name은 필수입니다.' });
 
-  const category = { name, order: order ?? 0, createdAt: new Date() };
+  const all = await Category.findAll();
+  const maxOrder = all.reduce((max, c) => Math.max(max, c.order ?? 0), 0);
+  const category = { name, order: maxOrder + 1, createdAt: new Date() };
   const created = await Category.create(category);
   res.status(201).json(created);
 }
