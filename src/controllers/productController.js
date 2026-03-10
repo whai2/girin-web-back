@@ -2,9 +2,22 @@ import * as Product from '../models/productModel.js';
 import * as StoreProduct from '../models/storeProductModel.js';
 import { uploadToS3, deleteFromS3 } from '../config/s3.js';
 
-export async function getProducts(_req, res) {
-  const products = await Product.findAll();
-  res.json(products);
+export async function getProducts(req, res) {
+  const { search, category, page, limit } = req.query;
+
+  // 쿼리 파라미터가 없으면 기존 동작 유지
+  if (!search && !category && !page && !limit) {
+    const products = await Product.findAll();
+    return res.json(products);
+  }
+
+  const result = await Product.findWithFilter({ search, category, page, limit });
+  res.json({
+    items: result.items,
+    total: result.total,
+    page: Number(page) || 1,
+    limit: Number(limit) || result.total,
+  });
 }
 
 export async function createProduct(req, res) {
@@ -15,8 +28,11 @@ export async function createProduct(req, res) {
   }
 
   let image = '';
+  let thumbnail = '';
   if (req.file) {
-    image = await uploadToS3(req.file);
+    const result = await uploadToS3(req.file);
+    image = result.image;
+    thumbnail = result.thumbnail;
   }
 
   const product = {
@@ -25,6 +41,7 @@ export async function createProduct(req, res) {
     category: Number(category),
     price: Number(price) || 20000,
     image,
+    thumbnail,
     smartStoreUrl: smartStoreUrl || '',
     createdAt: new Date(),
   };
@@ -47,7 +64,12 @@ export async function updateProduct(req, res) {
     if (existing?.image) {
       await deleteFromS3(existing.image).catch(() => {});
     }
-    update.image = await uploadToS3(req.file);
+    if (existing?.thumbnail) {
+      await deleteFromS3(existing.thumbnail).catch(() => {});
+    }
+    const result = await uploadToS3(req.file);
+    update.image = result.image;
+    update.thumbnail = result.thumbnail;
   }
 
   const result = await Product.updateById(id, update);
@@ -63,6 +85,9 @@ export async function deleteProduct(req, res) {
 
   if (product.image) {
     await deleteFromS3(product.image).catch(() => {});
+  }
+  if (product.thumbnail) {
+    await deleteFromS3(product.thumbnail).catch(() => {});
   }
 
   await StoreProduct.deleteByProduct(id);

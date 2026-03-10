@@ -4,14 +4,16 @@ import * as Product from '../models/productModel.js';
 // 장소별 상품 목록 (상품 정보 포함)
 export async function getStoreProducts(req, res) {
   const storeId = req.storeObjectId;
+  const { ageGroup, category, search, page, limit } = req.query;
+
   const [products, storeProducts] = await Promise.all([
-    Product.findAll(),
+    Product.findWithFilter({ search, category }),
     StoreProduct.findByStore(storeId),
   ]);
 
   const spMap = new Map(storeProducts.map((sp) => [sp.productId.toString(), sp]));
 
-  const merged = products.map((product) => {
+  let merged = products.items.map((product) => {
     const sp = spMap.get(product._id.toString());
     return {
       ...product,
@@ -21,7 +23,26 @@ export async function getStoreProducts(req, res) {
     };
   });
 
-  res.json(merged);
+  // ageGroup 필터: 없으면 전체, all이면 빈 배열 제외, kids/adult이면 해당만
+  if (ageGroup === 'all') {
+    merged = merged.filter((p) => p.ageGroup.length > 0);
+  } else if (ageGroup) {
+    merged = merged.filter((p) => p.ageGroup.includes(ageGroup));
+  }
+
+  // 페이지네이션 (ageGroup 필터 적용 후)
+  const total = merged.length;
+  if (page && limit) {
+    const skip = (Number(page) - 1) * Number(limit);
+    merged = merged.slice(skip, skip + Number(limit));
+  }
+
+  res.json({
+    items: merged,
+    total,
+    page: Number(page) || 1,
+    limit: Number(limit) || total,
+  });
 }
 
 // 장소별 상품 설정 수정

@@ -9,6 +9,31 @@ export async function findAll() {
   return collection().find().sort({ _id: -1 }).toArray();
 }
 
+export async function findWithFilter({ search, category, page, limit } = {}) {
+  const filter = {};
+
+  if (search) {
+    filter.name = { $regex: search, $options: 'i' };
+  }
+  if (category !== undefined) {
+    filter.category = Number(category);
+  }
+
+  const query = collection().find(filter).sort({ _id: -1 });
+
+  if (page && limit) {
+    const skip = (Number(page) - 1) * Number(limit);
+    query.skip(skip).limit(Number(limit));
+  }
+
+  const [items, total] = await Promise.all([
+    query.toArray(),
+    collection().countDocuments(filter),
+  ]);
+
+  return { items, total };
+}
+
 export async function findById(id) {
   return collection().findOne({ _id: new ObjectId(id) });
 }
