@@ -6,7 +6,7 @@ function collection() {
 }
 
 export async function findAll() {
-  return collection().find().toArray();
+  return collection().find().sort({ _id: -1 }).toArray();
 }
 
 export async function findById(id) {

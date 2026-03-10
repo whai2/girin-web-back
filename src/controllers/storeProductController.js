@@ -17,7 +17,7 @@ export async function getStoreProducts(req, res) {
       ...product,
       soldOut: sp?.soldOut ?? false,
       soldOutSizes: sp?.soldOutSizes ?? [],
-      ageGroup: sp?.ageGroup ?? ['adult'],
+      ageGroup: sp?.ageGroup ?? [],
     };
   });
 
@@ -80,7 +80,7 @@ export async function toggleAge(req, res) {
   const { age } = req.body;
 
   const existing = await StoreProduct.findOne(storeId, productId);
-  const ageGroup = existing?.ageGroup ?? ['adult'];
+  const ageGroup = existing?.ageGroup ?? [];
   const updatedAgeGroup = ageGroup.includes(age)
     ? ageGroup.filter((a) => a !== age)
     : [...ageGroup, age];
