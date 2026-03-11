@@ -106,6 +106,11 @@ export async function toggleAge(req, res) {
     ? ageGroup.filter((a) => a !== age)
     : [...ageGroup, age];
 
-  const result = await StoreProduct.upsert(storeId, productId, { ageGroup: updatedAgeGroup });
+  const update = { ageGroup: updatedAgeGroup };
+  if (updatedAgeGroup.length === 0) {
+    update.soldOutSizes = [];
+  }
+
+  const result = await StoreProduct.upsert(storeId, productId, update);
   res.json(result);
 }
