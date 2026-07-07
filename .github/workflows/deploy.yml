@@ -18,6 +18,7 @@ jobs:
             cat > ~/.env.girin << 'EOF'
             ${{ secrets.ENV_FILE }}
             EOF
+            chmod 600 ~/.env.girin
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
@@ -26,16 +27,21 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PEM_KEY }}
           script: |
-            if [ ! -d ~/girin_server ]; then
+            set -e
+            if [ ! -d ~/girin_server/.git ]; then
+              rm -rf ~/girin_server
               git clone https://github.com/whai2/girin-web-back.git ~/girin_server
             fi
             cd ~/girin_server
-            git pull origin main
-            docker stop $(docker ps -q) || true
-            docker rm $(docker ps -aq) || true
+            git fetch origin main
+            git reset --hard origin/main
             docker build -t girin-server .
+            # girin-server 컨테이너만 교체 (다른 서비스 컨테이너는 건드리지 않음)
+            docker rm -f girin-server || true
             docker run -d \
               --name girin-server \
               -p 4000:4000 \
               --env-file ~/.env.girin \
+              --restart unless-stopped \
               girin-server
+            docker image prune -f || true
