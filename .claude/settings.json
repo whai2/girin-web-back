@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/no-eunsu/.ssh/**)",
+      "Bash(dig +short api.wgggtshirtslist.com)",
+      "Bash(nslookup api.wgggtshirtslist.com)",
+      "Bash(chmod 600 girin-website.pem)",
+      "Bash(:)",
+      "Bash(openssl s_client -servername api.wgggtshirtslist.com -connect api.wgggtshirtslist.com:443)",
+      "Bash(openssl x509 *)",
+      "Bash(curl -sS -o /dev/null -w 'HTTP %{http_code} | TLS verify: %{ssl_verify_result} \\(0=OK\\)\\\\n' -X POST https://api.wgggtshirtslist.com/api/auth/login -H 'Content-Type: application/json' -d '{\"id\":\"x\",\"password\":\"x\"}' --max-time 15)",
+      "Bash([ -f \"$F\" ])",
+      "Bash(grep -iE \"\\\\.pem$|\\\\.env$\")"
+    ]
+  }
+}
